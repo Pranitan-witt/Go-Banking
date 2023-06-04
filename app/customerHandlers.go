@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"net/http"
 
@@ -26,19 +25,14 @@ func greeting(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ch *CustomerHandlers) getAllCustomer(w http.ResponseWriter, r *http.Request) {
-	// customer := []Customer{
-	// 	{Name: "Pranitan", City: "Bangkok", Zipcode: "10110"},
-	// 	{"Sutussa", "Samut Sakhon", "40100"},
-	// }
-	customers, _ := ch.service.GetAllCustomer()
+	customers, err := ch.service.GetAllCustomer(r.URL.Query().Get("status"))
 
-	if r.Header.Get("Content-Type") == "application/xml" {
-		w.Header().Add("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customers)
-	} else {
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(customers)
+	if err != nil {
+		writeResponse(w, err.Code, err.AsMessage())
+		return
 	}
+
+	writeResponse(w, http.StatusOK, customers)
 }
 
 func (ch *CustomerHandlers) getCustomerId(w http.ResponseWriter, r *http.Request) {
